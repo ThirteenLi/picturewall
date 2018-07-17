@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        body,html{
+            height: 100%;
+            width: 100%;
+        }
+        #container{
+            height: 100%;
+            width: 100%;
+            background-image: url("img/bg.jpg");
+        }
+        #container .img{
+            width: 125px;
+            height: 125px;
+            border:5px solid #fff;
+            box-shadow: 2px 2px 2px 2px rgba(0,0,0,0.6);
+            position: absolute;
+            top:-500px;
+            left:-500px;
+            transition:all 1s ease;
+            cursor:pointer;
+        }
+        #container .img span{
+            display:block;
+            width: 100%;
+            height: 100%;
+            /*opacity: 0;*/
+            transition: all 1s ease;
+            position:absolute;
+            top:0;
+            left:0;
+        }
+        #left,#right{
+            height: 80px;
+            width: 20px;
+            position: absolute;
+            top:50%;
+            margin-top: -40px;
+            cursor:pointer;
+            display: none;
+        }
+        #left{
+            left:0;
+            border-radius: 0 8px 8px 0;
+            background: #CCCCCC url("img/prev.png") no-repeat center;
+        }
+        #right{
+            border-radius: 8px 0 0 8px;
+            right:0;
+            background: #CCCCCC url("img/next.png") no-repeat center;
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<div id="left"></div>
+<div id="right"></div>
+<script>
+    var oContainer=document.getElementById("container");
+    var ROW= 4,COL= 6,NUM=ROW*COL;
+    var THUMB_WIDTH = 125, THUMB_HEIGHT = 125,
+            BIG_WIDTH = 750, BIG_HEIGHT = 500;
+    var count=0;
+    var nowindex=0;
+    var index=0;
+    var aImg;
+    var imgWidth;
+    var imgHeight;
+    var fColGap;
+    var fRowGap;
+    var fBigRowGap = (oContainer.offsetHeight - BIG_HEIGHT) / 2;
+    var fBigColGap = (oContainer.offsetWidth - BIG_WIDTH) / 2;
+    var bFlag=true;//true 散 false 合
+    var oLeft=document.getElementById("left");
+    var oRight=document.getElementById("right");
+    function loadSuccess(){
+        for(var i=0;i<ROW;i++)
+            for(var j=0;j<COL;j++){
+                var oDiv=document.createElement("div");
+                index++;
+                oDiv.style.backgroundImage="url(img/thumbs/"+ index+".jpg)";
+                oDiv.className="img";
+                oDiv.innerHTML="<span></span>";
+                oDiv.pos={
+                    col:j,
+                    row:i,
+                    index:index
+                };
+                oContainer.appendChild(oDiv);
+            }
+        //定位
+        aImg=oContainer.getElementsByClassName("img");
+        imgWidth=aImg[0].offsetWidth;
+        imgHeight=aImg[0].offsetHeight;
+        fColGap=(oContainer.offsetWidth-imgWidth*COL)/(COL+1);
+        fRowGap=(oContainer.offsetHeight-imgHeight*ROW)/(ROW+1);
+        for(var i=0;i<NUM;i++){
+            aImg[i].style.top=(fRowGap+imgHeight)*aImg[i].pos.row+fRowGap+"px";
+            aImg[i].style.left=(fColGap+imgWidth)*aImg[i].pos.col+fColGap+"px";
+            aImg[i].style.transitionDelay=(23-i)*100+"ms";
+            aImg[i].style.transform="rotate("+ (Math.random()*50-25)+"deg)";
+        }
+    }
+    for(var i=0;i<NUM;i++){
+        var oThumbsImg=new Image();
+        oThumbsImg.onload=function(){
+            count++;
+            if(count==NUM*2){
+                loadSuccess();
+            }
+        };
+        oThumbsImg.src="img/thumbs/"+ (i+1)+".jpg";
+        var oBigImage=new Image();
+        oBigImage.onload=function(){
+            count++;
+            if(count==NUM*2){
+                loadSuccess();
+            }
+        };
+        oBigImage.src="img/"+ (i+1)+".jpg";
+    }
+
+    oContainer.onclick=function(e){
+        if(this=== e.target){
+            return false;
+        }
+        if(bFlag){
+            for(var i=0;i<aImg.length;i++){
+                aImg[i].style.transitionDelay="0ms";
+                aImg[i].style.top=fBigRowGap+THUMB_HEIGHT*aImg[i].pos.row+"px";
+                aImg[i].style.left=fBigColGap+THUMB_WIDTH*aImg[i].pos.col+"px";
+                aImg[i].style.transform="rotate(0)";
+                aImg[i].style.borderWidth="2px";
+                aImg[i].style.boxShadow="0 0 0 0";
+                var oSpan=aImg[i].getElementsByTagName("span")[0];
+                oSpan.style.opacity=1;
+                var imgURL;
+                if(e.target.className=="img"){
+                    imgURL= e.target.pos.index;
+                }else{
+                    imgURL= e.target.parentNode.pos.index;
+                }
+                nowindex=imgURL-1;
+                oSpan.style.backgroundImage="url(img/"+ imgURL+".jpg)";
+                oSpan.style.backgroundPosition = -THUMB_WIDTH * aImg[i].pos.col + "px "+ (-THUMB_HEIGHT * aImg[i].pos.row) +"px";
+            }
+                oLeft.style.display=oRight.style.display="block";
+        }else{
+         for(var i=0;i<NUM;i++){
+             aImg[i].style.top=(fRowGap+imgHeight)*aImg[i].pos.row+fRowGap+"px";
+             aImg[i].style.left=(fColGap+imgWidth)*aImg[i].pos.col+fColGap+"px";
+             aImg[i].style.transform="rotate("+ (Math.random()*50-25)+"deg)";
+             aImg[i].style.borderWidth = "5px";
+             aImg[i].style.boxShadow=" 2px 2px 2px 2px rgba(0,0,0,0.6)";
+             var oSpan=aImg[i].getElementsByTagName("span")[0];
+             oSpan.style.transitionDelay="0ms";
+             oSpan.style.opacity=0;
+         }
+            oLeft.style.display=oRight.style.display="none";
+        }
+        bFlag=!bFlag;
+    };
+
+oLeft.onclick=oRight.onclick=function(){
+    if(this==oLeft){
+        nowindex=(nowindex+NUM-1)%NUM;
+    }else{
+        nowindex=(nowindex+1)%NUM;
+    }
+    for(var i=0;i<aImg.length;i++){
+        var oSpan=aImg[i].getElementsByTagName("span")[0];
+        oSpan.style.transitionDelay=Math.random()*1000+600+"ms";
+        oSpan.style.backgroundImage="url(img/"+(nowindex+1)+".jpg)";
+    }
+
+
+
+};
+
+</script>
+</body>
+</html>
